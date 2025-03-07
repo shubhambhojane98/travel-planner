@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,10 @@ import Image from "next/image";
 const TravelForm = () => {
   const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
+  const [destination, setDestination] = useState("");
+  const debounceRef = useRef<NodeJS.Timeout | null>(null); // FIX: Proper Type
+  const fetchIdRef = useRef(0); // Tracks latest API request
 
   const { register, handleSubmit, control, watch } = useForm();
   const onSubmit = (data: any) => console.log(data);
@@ -68,23 +72,76 @@ const TravelForm = () => {
     }
   };
 
+  const fetchSuggestions = async (query: any, fetchId: number) => {
+    if (query.length < 2) return;
+    try {
+      const response = await fetch(
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${query}&apiKey=9aae5e7f02e045cfaaf6879208937f71`
+      );
+      const data = await response.json();
+      setSuggestions(
+        data.features.map((feature: any) => feature.properties.formatted)
+      );
+    } catch (error) {
+      console.error("Error fetching location suggestions:", error);
+    }
+  };
+
+  const handleDestinationChange = (e: any) => {
+    const value = e.target.value;
+    setDestination(value);
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (value.trim() === "") {
+      setSuggestions([]); // Clear suggestions when input is empty
+    } else {
+      const fetchId = ++fetchIdRef.current;
+      debounceRef.current = setTimeout(
+        () => fetchSuggestions(value, fetchId),
+        300
+      );
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: any) => {
+    setDestination(suggestion);
+    setSuggestions([]);
+  };
+
+  console.log(suggestions);
+
   return (
     <div className="">
       <form
         className="w-2/4 flex flex-col justify-evenly h-screen mx-auto mt-10 "
         onSubmit={handleSubmit(onSubmit)}
       >
-        <div className="">
+        <div className="relative">
           <Label className="text-xl  font-medium ">
             Where do you plan to go?
           </Label>
           <Input
-            className="mt-2"
+            className="mt-2 "
             type="text"
             placeholder="Paris"
             {...register("destination", { required: true })}
-            // value={destination}
+            value={destination}
+            onChange={handleDestinationChange}
           />
+          {suggestions.length > 0 && (
+            <ul className="absolute bg-white border w-full  shadow-md max-h-40 overflow-y-auto z-10">
+              {suggestions.map((suggestion, index) => (
+                <li
+                  key={index}
+                  className="p-2 cursor-pointer hover:bg-gray-200"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="">
