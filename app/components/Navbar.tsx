@@ -3,18 +3,20 @@ import Link from "next/link";
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SignInButton, UserButton, useUser } from "@clerk/nextjs";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { isLoaded, isSignedIn } = useUser();
 
   const navItems = [
-    { name: "Recommended Trip", path: "/recommended" },
+    { name: "Recommended Trip", path: "/" },
     { name: "Create Trip", path: "/itinerary" },
     { name: "My Trip", path: "/my-trips" },
   ];
 
   return (
-    <nav className="bg-black text-white px-6 py-3  shadow-lg">
+    <nav className="bg-black text-white px-6 py-3 shadow-lg">
       <div className="flex justify-between items-center">
         {/* Logo */}
         <h1 className="text-xl font-bold">AI Trip Planner</h1>
@@ -36,8 +38,18 @@ const Navbar = () => {
           ))}
         </ul>
 
-        {/* Sign In Button */}
-        <Button variant="secondary">Sign In</Button>
+        {/* Auth Buttons with Flicker Prevention */}
+        <div className="hidden md:block">
+          {!isLoaded ? (
+            <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
+          ) : isSignedIn ? (
+            <UserButton />
+          ) : (
+            <SignInButton>
+              <Button variant="secondary">Sign In</Button>
+            </SignInButton>
+          )}
+        </div>
       </div>
 
       {/* Mobile Menu (Shown when Open) */}
@@ -52,9 +64,17 @@ const Navbar = () => {
               <Link href={path}>{name}</Link>
             </li>
           ))}
-          <Button variant="secondary" onClick={() => setIsOpen(false)}>
-            Sign In
-          </Button>
+          <div className="text-center">
+            {!isLoaded ? (
+              <div className="h-8 w-24 bg-gray-200 animate-pulse rounded"></div>
+            ) : isSignedIn ? (
+              <UserButton />
+            ) : (
+              <SignInButton>
+                <Button variant="secondary">Sign In</Button>
+              </SignInButton>
+            )}
+          </div>
         </ul>
       )}
     </nav>
