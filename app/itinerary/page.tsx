@@ -13,18 +13,18 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { DateRange } from "react-day-picker";
+import { DateRange, SelectRangeEventHandler } from "react-day-picker";
 import Image from "next/image";
 
 const TravelForm = () => {
-  const [date, setDate] = useState<DateRange | undefined>(undefined);
+  // const [date, setDate] = useState<DateRange | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [destination, setDestination] = useState("");
   const debounceRef = useRef<NodeJS.Timeout | null>(null); // FIX: Proper Type
   const fetchIdRef = useRef(0); // Tracks latest API request
 
-  const { register, handleSubmit, control, watch } = useForm();
+  const { register, handleSubmit, control, watch, setValue } = useForm();
   const onSubmit = (data: any) => console.log(data);
 
   const travelTypes = [
@@ -60,15 +60,19 @@ const TravelForm = () => {
   const selectedBudget = watch("budget") || "";
   const selectedActivities = watch("activities") || [];
   const selectedTravelType = watch("travelType") || "";
+  const date = watch("date") || "";
 
   const today = startOfDay(new Date()); // Get today's date at midnight
 
-  const handleSelect = (selectedRange: DateRange | undefined) => {
-    if (selectedRange?.from && selectedRange?.to) {
-      setDate(selectedRange);
-      setOpen(false); // Close popover when a valid range is selected
-    } else {
-      setDate(selectedRange);
+  // Handle date selection
+  const handleSelect: SelectRangeEventHandler = (selectedDate) => {
+    if (!selectedDate) return; // Ensure valid date selection
+
+    setValue("date", selectedDate); // Update form state
+
+    // Close popover only when both start and end dates are selected
+    if (selectedDate.from && selectedDate.to) {
+      setOpen(false);
     }
   };
 
@@ -118,6 +122,7 @@ const TravelForm = () => {
         onSubmit={handleSubmit(onSubmit)}
       >
         <div className="relative">
+          <input type="hidden" {...register("date")} />
           <Label className="text-xl  font-medium ">
             Where do you plan to go?
           </Label>
@@ -178,15 +183,12 @@ const TravelForm = () => {
                   initialFocus
                   mode="range"
                   defaultMonth={date?.from || today}
-                  selected={date} // Ensure proper type
+                  selected={date}
                   onSelect={handleSelect}
                   numberOfMonths={2}
-                  disabled={
-                    (day) =>
-                      isBefore(day, today) || // Disable past dates
-                      (date?.from
-                        ? isAfter(day, addDays(date.from, 14))
-                        : false) // Disable dates beyond 14 days from selected start date
+                  disabled={(day) =>
+                    isBefore(day, today) ||
+                    (date?.from ? isAfter(day, addDays(date.from, 14)) : false)
                   }
                 />
               </PopoverContent>
