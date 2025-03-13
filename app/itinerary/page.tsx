@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { DateRange, SelectRangeEventHandler } from "react-day-picker";
 import Image from "next/image";
+import { useUser } from "@clerk/nextjs";
+import { error } from "console";
 
 const TravelForm = () => {
   // const [date, setDate] = useState<DateRange | undefined>(undefined);
@@ -25,7 +27,24 @@ const TravelForm = () => {
   const fetchIdRef = useRef(0); // Tracks latest API request
 
   const { register, handleSubmit, control, watch, setValue } = useForm();
-  const onSubmit = (data: any) => console.log(data);
+  const { user } = useUser();
+  const userId = user?.id;
+
+  const onSubmit = async (data: any) => {
+    try {
+      const response = await fetch("/api/itinerary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, ...data }),
+      });
+
+      const result = await response.json();
+
+      console.log("RESULT", result);
+    } catch (error) {
+      console.log("Error", error);
+    }
+  };
 
   const travelTypes = [
     { name: "Family", icon: "/family.png" },
