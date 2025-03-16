@@ -23,17 +23,23 @@ export async function POST(req: Request) {
       );
     }
 
+    // **Updated Prompt to Expect String Activities & Recommendations**
     const prompt = `
-    Generate a concise travel itinerary for ${destination} from ${date.from} to ${date.to}.
-    Use a compact JSON format with:
-    - "day": "Day X"
-    - "date": "YYYY-MM-DD"
-    - "activities": [{"time": "HH:mm", "activity": "Brief Title", "details": "Brief description"}]
-    - "recommendations": ["Short tip 1", "Short tip 2"]
-    
-    Ensure every activity has a "details" field.
-    Keep descriptions minimal and within 1000 tokens.
-    Return **only** the JSON, without extra text.
+    Generate a detailed travel itinerary for a trip to ${destination}.
+- Travel Dates: ${date.from} to ${date.to}
+- Budget: ${budget}
+- Travel Type: ${travelType}
+- Preferred Activities: ${activities}
+    Return JSON in the following format:
+    [
+      {
+        "day": "Day X - Title",
+        "date": "YYYY-MM-DD",
+        "activities": "Activity 1, Activity 2, Activity 3", 
+        "recommendations": "Tip 1, Tip 2"
+      }
+    ]
+    Ensure activities should be in detail and recommendations are always **single strings** (comma-separated).
     `;
 
     const response = await openai.chat.completions.create({
@@ -56,18 +62,24 @@ export async function POST(req: Request) {
     let itineraryJson;
     try {
       itineraryJson = JSON.parse(cleanedText);
-
-      // Validate that itinerary items contain required fields
-      if (
-        !Array.isArray(itineraryJson.itinerary) ||
-        itineraryJson.itinerary.some((item: any) => !item.day || !item.date)
-      ) {
-        throw new Error("Invalid itinerary format: Missing 'day' or 'date'");
-      }
+      console.log("Parsed Itinerary:", itineraryJson);
     } catch (error) {
       console.error("Error parsing itinerary JSON:", error);
       return NextResponse.json({ error: "Failed to parse itinerary JSON" });
     }
+
+    // **Ensure activities & recommendations are stored as single strings**
+    // itineraryJson = itineraryJson.map((day: any) => ({
+    //   ...day,
+    //   activities: typeof day.activities === "string" ? day.activities : "",
+    //   recommendations:
+    //     typeof day.recommendations === "string" ? day.recommendations : "",
+    // }));
+
+    console.log(
+      "Itinerary being saved:",
+      JSON.stringify(itineraryJson, null, 2)
+    );
 
     if (userId) {
       // Save itinerary to MongoDB
@@ -78,9 +90,12 @@ export async function POST(req: Request) {
           date,
           budget,
           travelType,
-          activities,
-          itinerary: itineraryJson.itinerary, // Ensure proper structure
+          activities: Array.isArray(activities)
+            ? activities.join(", ")
+            : activities || "", // Convert to single string
+          itinerary: itineraryJson, // Ensure proper structure
         });
+
         console.log("Saved Itinerary:", newItinerary);
         return NextResponse.json({ success: true, itinerary: newItinerary });
       } catch (mongoError: any) {
@@ -98,8 +113,10 @@ export async function POST(req: Request) {
           date,
           budget,
           travelType,
-          activities,
-          itinerary: itineraryJson.itinerary,
+          activities: Array.isArray(activities)
+            ? activities.join(", ")
+            : activities || "",
+          itinerary: itineraryJson,
         },
       });
     }

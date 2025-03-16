@@ -1,45 +1,26 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface ItineraryDocument extends Document {
-  userId: string;
-  destination: string;
-  date: { from: Date; to: Date };
-  budget: string;
-  travelType: string;
-  activities: string[];
-  itinerary: {
-    day: string;
-    date: string;
-    activities: { time: string; activity: string }[];
-    recommendations: string[];
-  }[];
-  createdAt: Date;
-}
-
-const ItinerarySchema = new Schema<ItineraryDocument>({
-  userId: { type: String, required: true },
+const ItinerarySchema = new Schema({
+  userId: { type: String, required: false }, // Optional for guest users
   destination: { type: String, required: true },
   date: {
-    from: { type: Date, required: true },
-    to: { type: Date, required: true },
+    from: { type: String, required: true },
+    to: { type: String, required: true },
   },
-  budget: { type: String, required: true },
-  travelType: { type: String, required: true },
-  activities: [{ type: String }], // General activities list
+  budget: { type: String, required: false },
+  travelType: { type: String, required: false },
+
+  activities: { type: String, required: false }, // Simple string instead of an array
+
   itinerary: [
     {
       day: { type: String, required: true },
       date: { type: String, required: true },
-      activities: [
-        {
-          time: { type: String, required: true },
-          activity: { type: String, required: true },
-        },
-      ],
-      recommendations: [{ type: String }],
+      activities: { type: String, required: true }, // Single string instead of an array
+      recommendations: { type: String, required: false }, // Single string instead of an array
     },
   ],
-  createdAt: { type: Date, default: Date.now },
 });
+
 export default mongoose.models.Itinerary ||
-  mongoose.model<ItineraryDocument>("Itinerary", ItinerarySchema);
+  mongoose.model("Itinerary", ItinerarySchema);
