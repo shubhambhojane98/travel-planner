@@ -11,7 +11,7 @@ const Navbar = () => {
 
   const navItems = [
     { name: "Recommended Trip", path: "/" },
-    { name: "Create Trip", path: "/itinerary" },
+    { name: "Create Trip", path: "/create-trip" },
     { name: "My Trip", path: "/my-trips" },
   ];
 
