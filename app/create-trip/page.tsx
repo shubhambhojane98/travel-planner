@@ -44,7 +44,7 @@ const TravelForm = () => {
   console.log("IT", itinerary);
 
   const onSubmit = async (data: any) => {
-    setLoading(true); // ✅ Start loading
+    setLoading(true); // Start loading
 
     try {
       const response = await fetch("/api/itinerary", {
@@ -54,10 +54,23 @@ const TravelForm = () => {
       });
 
       const result = await response.json();
+
       if (response.ok) {
         dispatch(setItinerary(result.itinerary)); // Save to Redux
-        router.push(`/itinerary`); // ✅ Redirect immediately
-        return; // ✅ Prevent further execution (No need to set loading false)
+
+        if (userId) {
+          //Authenticated User: Redirect to itinerary details page
+          router.push(`/itinerary/${result.itinerary._id}`);
+        } else {
+          // Guest User: Store itinerary in localStorage & Redirect
+          localStorage.setItem(
+            "guestItinerary",
+            JSON.stringify(result.itinerary)
+          );
+          router.push(`/guest-itinerary`);
+        }
+
+        return; //Prevent further execution
       } else {
         console.error("Error:", result.error);
       }
@@ -65,7 +78,7 @@ const TravelForm = () => {
       console.log("Error", error);
     }
 
-    setLoading(false); // ✅ Only set loading false if there’s an error
+    setLoading(false); // Set loading false only if there's an error
   };
 
   const travelTypes = [

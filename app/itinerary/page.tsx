@@ -3,7 +3,7 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 
-const myTrip = () => {
+const Itineraries = () => {
   const itinerary = useSelector(
     (state: RootState) => state.itinerary.itinerary
   );
@@ -11,4 +11,4 @@ const myTrip = () => {
   return <div>myTrip</div>;
 };
 
-export default myTrip;
+export default Itineraries;

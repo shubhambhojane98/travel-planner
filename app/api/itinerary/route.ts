@@ -7,6 +7,29 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+
+// Function to fetch images from Pexels
+const fetchImageFromPexels = async (query: string) => {
+  try {
+    const response = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(
+        query
+      )}&per_page=1`,
+      {
+        headers: {
+          Authorization: PEXELS_API_KEY!,
+        },
+      }
+    );
+    const data = await response.json();
+    return data.photos.length > 0 ? data.photos[0].src.large : null;
+  } catch (error) {
+    console.error("Error fetching image from Pexels:", error);
+    return null;
+  }
+};
+
 export async function POST(req: Request) {
   await connectMongoDB(); // Ensure DB connection is awaited
 
@@ -26,21 +49,26 @@ export async function POST(req: Request) {
     // **Updated Prompt to Expect String Activities & Recommendations**
     const prompt = `
     Generate a detailed travel itinerary for a trip to ${destination}.
-- Travel Dates: ${date.from} to ${date.to}
-- Budget: ${budget}
-- Travel Type: ${travelType}
-- Preferred Activities: ${activities}
+    - Travel Dates: ${date.from} to ${date.to}
+    - Budget: ${budget}
+    - Travel Type: ${travelType}
+    - Preferred Activities: ${activities}
+    
     Return JSON in the following format:
     [
       {
         "day": "Day X - Title",
         "date": "YYYY-MM-DD",
         "activities": "Activity 1, Activity 2, Activity 3", 
-        "recommendations": "Tip 1, Tip 2"
+        "recommendations": "Tip 1, Tip 2",
+        "image_keywords": "keyword1, keyword2, keyword3"
       }
     ]
-    Ensure activities should be in detail and recommendations are always **single strings** (comma-separated).
-    `;
+    
+    **Ensure:**
+    - Activities should be detailed and engaging.
+    - Recommendations should be a single string (comma-separated).
+    "image_keywords" should contain one highly relevant keyword that best represents the day's itinerary, focusing on landmarks, destinations, or cultural attractions (e.g., "Eiffel Tower," "Interlaken Lake," "Taj Mahal").    `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -81,6 +109,19 @@ export async function POST(req: Request) {
       JSON.stringify(itineraryJson, null, 2)
     );
 
+    // **Fetch Images from Pexels for Each Day**
+    const enrichedItinerary = await Promise.all(
+      itineraryJson.map(async (day: any) => {
+        const image = await fetchImageFromPexels(`${day.image_keywords}`);
+        return { ...day, image: image || "" };
+      })
+    );
+
+    console.log(
+      "Final Itinerary with Images:",
+      JSON.stringify(enrichedItinerary, null, 2)
+    );
+
     if (userId) {
       // Save itinerary to MongoDB
       try {
@@ -93,8 +134,19 @@ export async function POST(req: Request) {
           activities: Array.isArray(activities)
             ? activities.join(", ")
             : activities || "", // Convert to single string
-          itinerary: itineraryJson, // Ensure proper structure
+          itinerary: enrichedItinerary.map((day: any) => ({
+            day: day.day,
+            date: day.date,
+            activities: day.activities,
+            recommendations: day.recommendations,
+            image: day.image || "", // 🔥 Force image field inclusion
+          })),
         });
+        const savedItinerary = await Itinerary.findById(newItinerary._id);
+        console.log(
+          "🔵 Retrieved Itinerary from DB:",
+          JSON.stringify(savedItinerary, null, 2)
+        );
 
         console.log("Saved Itinerary:", newItinerary);
         return NextResponse.json({ success: true, itinerary: newItinerary });
@@ -116,7 +168,10 @@ export async function POST(req: Request) {
           activities: Array.isArray(activities)
             ? activities.join(", ")
             : activities || "",
-          itinerary: itineraryJson,
+          itinerary: enrichedItinerary.map((day: any) => ({
+            ...day,
+            image: day.image || "", // ✅ Ensures image is always included
+          })),
         },
       });
     }
