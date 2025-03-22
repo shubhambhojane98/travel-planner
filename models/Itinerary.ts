@@ -18,6 +18,8 @@ const ItinerarySchema = new mongoose.Schema(
         activities: { type: String, required: true },
         recommendations: { type: String, required: true },
         image: { type: String, required: false }, // ✅ Ensure image field exists
+        lat: { type: Number, required: true },
+        lon: { type: Number, required: true },
       },
     ],
   },

@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import StoreProvider from "./components/StoreProvider";
+import "leaflet/dist/leaflet.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

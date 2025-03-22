@@ -1,32 +1,48 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ItineraryItem } from "../types/itineraryPlan";
+import { ItineraryPlan } from "../types/itineraryPlan";
 import ItineraryCard from "../components/ItineraryCard";
-import { usePathname } from "next/navigation";
+import Map from "../components/Map";
 
-const GuestItinerary = () => {
+const GuestItinerary: React.FC = () => {
   console.log("Component is rendering...");
 
-  const [itinerary, setItinerary] = useState<ItineraryItem[]>([]);
+  const [itinerary, setItinerary] = useState<ItineraryPlan | null>(null); //  Changed from array to object
 
   useEffect(() => {
     console.log("useEffect is running...");
 
-    try {
-      const storedItinerary = localStorage.getItem("guestItinerary");
-      console.log("Stored Itinerary:", storedItinerary);
+    const storedItinerary = localStorage.getItem("guestItinerary");
+    console.log("Stored Itinerary:", storedItinerary);
 
-      if (storedItinerary) {
-        setItinerary(JSON.parse(storedItinerary));
+    if (storedItinerary && storedItinerary !== "undefined") {
+      //  Check if it's not null or "undefined"
+      try {
+        const parsedItinerary: ItineraryPlan = JSON.parse(storedItinerary);
+        setItinerary(parsedItinerary);
+      } catch (error) {
+        console.error("Error parsing guestItinerary:", error);
       }
-    } catch (error) {
-      console.error("Error in useEffect:", error);
     }
   }, []);
 
+  if (!itinerary) {
+    return <p>Loading itinerary...</p>; // Handle null case properly
+  }
+
+  console.log("I", itinerary.itinerary);
+
   return (
-    <div>
-      <ItineraryCard trip={itinerary} />
+    <div className="flex flex-col md:flex-row gap-4 px-4 md:px-6 pt-4 md:pt-6">
+      {/* Itinerary Card - Full width on small screens, 50% on medium+ */}
+      <div className="w-full md:w-1/2">
+        <ItineraryCard trip={itinerary} />
+      </div>
+
+      {/* Map Section - Prevents touching the top */}
+      <div className="w-full md:w-[48%] h-[400px] rounded-lg overflow-hidden shadow-lg md:self-start">
+        <Map locations={itinerary.itinerary} />
+      </div>
     </div>
   );
 };

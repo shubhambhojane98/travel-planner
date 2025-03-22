@@ -1,10 +1,12 @@
 "use client";
 import ItineraryCard from "@/app/components/ItineraryCard";
+import Map from "@/app/components/Map";
 import { RootState } from "@/app/store/store";
 import { ItineraryItem, ItineraryPlan } from "@/app/types/itineraryPlan";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { MapContainer } from "react-leaflet";
 import { useSelector } from "react-redux";
 
 const Itinerary = () => {
@@ -39,8 +41,21 @@ const Itinerary = () => {
   if (!trip) return <p>Loading itineraries...</p>;
 
   return (
-    <div>
-      <ItineraryCard trip={trip} />
+    // <div>
+    //   <ItineraryCard trip={trip} />
+    //   <Map locations={trip.itinerary} />
+    // </div>
+
+    <div className="flex flex-col md:flex-row gap-4 px-4 md:px-6 pt-4 md:pt-6">
+      {/* Itinerary Card - Full width on small screens, 50% on medium+ */}
+      <div className="w-full md:w-1/2">
+        <ItineraryCard trip={trip} />
+      </div>
+
+      {/* Map Section - Prevents touching the top */}
+      <div className="w-full md:w-[48%] h-[400px] rounded-lg overflow-hidden shadow-lg md:self-start">
+        <Map locations={trip.itinerary} />
+      </div>
     </div>
   );
 };

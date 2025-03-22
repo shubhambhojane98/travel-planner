@@ -61,12 +61,15 @@ export async function POST(req: Request) {
         "date": "YYYY-MM-DD",
         "activities": "Activity 1, Activity 2, Activity 3", 
         "recommendations": "Tip 1, Tip 2",
-        "image_keywords": "keyword1, keyword2, keyword3"
+        "image_keywords": "keyword1, keyword2, keyword3",
+        "lat": 0.0000,
+        "lon": 0.0000,
       }
     ]
     
     **Ensure:**
     - Activities should be detailed and engaging.
+    - Each activity should have accurate latitude and longitude coordinates.
     - Recommendations should be a single string (comma-separated).
     "image_keywords" should contain one highly relevant keyword that best represents the day's itinerary, focusing on landmarks, destinations, or cultural attractions (e.g., "Eiffel Tower," "Interlaken Lake," "Taj Mahal").    `;
 
@@ -140,6 +143,8 @@ export async function POST(req: Request) {
             activities: day.activities,
             recommendations: day.recommendations,
             image: day.image || "", // 🔥 Force image field inclusion
+            lat: day.lat,
+            lon: day.lon,
           })),
         });
         const savedItinerary = await Itinerary.findById(newItinerary._id);
@@ -171,6 +176,8 @@ export async function POST(req: Request) {
           itinerary: enrichedItinerary.map((day: any) => ({
             ...day,
             image: day.image || "", // ✅ Ensures image is always included
+            lat: day.lat,
+            lon: day.lon,
           })),
         },
       });

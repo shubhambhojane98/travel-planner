@@ -5,6 +5,8 @@ export interface ItineraryItem {
   recommendations: string;
   image: string;
   _id: string; // Assuming ObjectId is stored as a string in frontend
+  lat: number;
+  lon: number;
 }
 
 export interface ItineraryPlan {
