@@ -190,3 +190,21 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    await connectMongoDB();
+    const itineraries = await Itinerary.find();
+
+    if (!itineraries) {
+      return NextResponse.json(
+        { error: "Itineraries not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(itineraries);
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Server Error", status: 500 });
+  }
+}
