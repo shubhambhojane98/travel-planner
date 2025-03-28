@@ -47,10 +47,16 @@ const TravelForm = () => {
     setLoading(true); // Start loading
 
     try {
+      const formattedData = {
+        ...data,
+        from: data.date?.from ? format(data.date.from, "yyyy-MM-dd") : null,
+        to: data.date?.to ? format(data.date.to, "yyyy-MM-dd") : null,
+      };
+
       const response = await fetch("/api/itinerary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, ...data }),
+        body: JSON.stringify({ userId, ...formattedData }),
       });
 
       const result = await response.json();
@@ -164,6 +170,7 @@ const TravelForm = () => {
 
   const handleSuggestionClick = (suggestion: any) => {
     setDestination(suggestion);
+    setValue("destination", suggestion);
     setSuggestions([]);
   };
 
@@ -250,7 +257,7 @@ const TravelForm = () => {
                     disabled={(day) =>
                       isBefore(day, today) ||
                       (date?.from
-                        ? isAfter(day, addDays(date.from, 14))
+                        ? isAfter(day, addDays(date.from, 10))
                         : false)
                     }
                   />

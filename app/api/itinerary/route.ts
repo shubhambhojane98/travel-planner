@@ -34,8 +34,18 @@ export async function POST(req: Request) {
   await connectMongoDB(); // Ensure DB connection is awaited
 
   try {
-    const { userId, destination, date, budget, travelType, activities } =
-      await req.json();
+    const {
+      userId,
+      destination,
+      date,
+      budget,
+      travelType,
+      activities,
+      from,
+      to,
+    } = await req.json();
+
+    console.log(from, to);
 
     if (!destination || !date?.from || !date?.to) {
       return NextResponse.json(
@@ -49,34 +59,42 @@ export async function POST(req: Request) {
     // **Updated Prompt to Expect String Activities & Recommendations**
     const prompt = `
     Generate a detailed travel itinerary for a trip to ${destination}.
-    - Travel Dates: ${date.from} to ${date.to}
-    - Budget: ${budget}
-    - Travel Type: ${travelType}
-    - Preferred Activities: ${activities}
+    - Travel Dates: ${from} to ${to}.
+    - Budget: ${budget}.
+    - Travel Type: ${travelType}.
+    - Preferred Activities: ${activities}.
     
     Return JSON in the following format:
-    [
-      {
-        "day": "Day X - Title",
-        "date": "YYYY-MM-DD",
-        "activities": "Activity 1, Activity 2, Activity 3", 
-        "recommendations": "Tip 1, Tip 2",
-        "image_keywords": "keyword1, keyword2, keyword3",
-        "lat": 0.0000,
-        "lon": 0.0000,
-      }
-    ]
-    
+    {
+      "visit": "Clear destination name  for eg- Paris,India, Zurich,Dublin",
+      "best_time": "Recommended travel period.",
+      "itinerary": [
+        {
+          "day": "Day X - Title",
+          "date": "YYYY-MM-DD",
+          "activities": "Activity 1, Activity 2, Activity 3.", 
+          "recommendations": "Tip 1, Tip 2.",
+          "budget_estimate": "Estimated cost for the day in USD.",
+          "transport_suggestion": "Suggested transport options.",
+          "image_keywords": "keyword1, keyword2, keyword3",
+          "lat": 0.0000,
+          "lon": 0.0000
+        }
+      ]
+    }
     **Ensure:**
     - Activities should be detailed and engaging.
     - Each activity should have accurate latitude and longitude coordinates.
     - Recommendations should be a single string (comma-separated).
+    - "budget_estimate" is tailored to travel type ${budget} in USD (low/medium/high).
+    - "transport_suggestion" includes metro, taxi, local transport  or walkability insights.
+    - "best_time" should provide the ideal months or seasons for visiting based on weather, crowd levels, and cultural events.
     "image_keywords" should contain one highly relevant keyword that best represents the day's itinerary, focusing on landmarks, destinations, or cultural attractions (e.g., "Eiffel Tower," "Interlaken Lake," "Taj Mahal").    `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 1000,
+      max_tokens: 2000,
     });
 
     const itineraryText = response.choices[0]?.message?.content?.trim();
@@ -114,15 +132,22 @@ export async function POST(req: Request) {
 
     // **Fetch Images from Pexels for Each Day**
     const enrichedItinerary = await Promise.all(
-      itineraryJson.map(async (day: any) => {
+      itineraryJson.itinerary.map(async (day: any) => {
         const image = await fetchImageFromPexels(`${day.image_keywords}`);
         return { ...day, image: image || "" };
       })
     );
 
+    const finalItinerary = {
+      ...itineraryJson, // Keep other properties unchanged
+      itinerary: enrichedItinerary, // Update itinerary with images
+    };
+
+    const common_image = await fetchImageFromPexels(destination);
+
     console.log(
       "Final Itinerary with Images:",
-      JSON.stringify(enrichedItinerary, null, 2)
+      JSON.stringify(finalItinerary, null, 2)
     );
 
     if (userId) {
@@ -137,11 +162,16 @@ export async function POST(req: Request) {
           activities: Array.isArray(activities)
             ? activities.join(", ")
             : activities || "", // Convert to single string
-          itinerary: enrichedItinerary.map((day: any) => ({
+          image: common_image,
+          visit: finalItinerary.visit,
+          best_time: finalItinerary.best_time,
+          itinerary: finalItinerary.itinerary.map((day: any) => ({
             day: day.day,
             date: day.date,
             activities: day.activities,
             recommendations: day.recommendations,
+            budget_estimate: day.budget_estimate,
+            transport_suggestion: day.transport_suggestion,
             image: day.image || "", // 🔥 Force image field inclusion
             lat: day.lat,
             lon: day.lon,
@@ -170,9 +200,12 @@ export async function POST(req: Request) {
           date,
           budget,
           travelType,
+          visit: itineraryJson.visit,
+          best_time: itineraryJson.best_time,
           activities: Array.isArray(activities)
             ? activities.join(", ")
             : activities || "",
+          image: common_image,
           itinerary: enrichedItinerary.map((day: any) => ({
             ...day,
             image: day.image || "", // ✅ Ensures image is always included

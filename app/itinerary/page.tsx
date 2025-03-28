@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
 import { ItineraryPlan } from "../types/itineraryPlan";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Itineraries = () => {
   const [itineraries, setItineraries] = useState<ItineraryPlan[]>([]);
@@ -31,7 +32,7 @@ const Itineraries = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div className="m-10">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">My Trips</h2>
 
       {loading ? (
@@ -39,18 +40,28 @@ const Itineraries = () => {
       ) : itineraries.length === 0 ? (
         <p className="text-gray-500">No itineraries found.</p>
       ) : (
-        <ul className="space-y-4">
+        <div className="flex flex-wrap gap-4 ">
           {itineraries.map((trip) => (
             <div
               onClick={() => handleNavigate(trip._id)}
               key={trip._id}
-              className="border p-4 rounded-lg shadow-sm"
+              className="relative w-[400px] bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden cursor-pointer transition-transform transform hover:scale-105"
             >
-              <h3 className="text-xl font-semibold">{trip.destination}</h3>
-              {/* <p className="text-gray-600">{trip.description}</p> */}
+              <Image
+                alt="Destination"
+                width={300}
+                height={200}
+                src={trip.image} // Provide a default image
+                className="w-full h-48 object-cover"
+              />
+              <div className="absolute inset-0  flex items-end justify-end ">
+                <h3 className="text-xl p-4  text-white font-bold ">
+                  {trip.destination}
+                </h3>
+              </div>
             </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

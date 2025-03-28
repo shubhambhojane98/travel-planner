@@ -19,6 +19,10 @@ const ItineraryCard = ({ trip }: any) => {
           key={item._id || index}
           className="mt-6 p-4 bg-gray-100 rounded-lg"
         >
+          <p className="text-gray-700 text-right">
+            Estimated Budget: ${item.budget_estimate}
+          </p>
+
           <h2 className="text-xl font-semibold">{item.day}</h2>
           <p className="text-gray-500">{item.date}</p>
 
@@ -30,6 +34,11 @@ const ItineraryCard = ({ trip }: any) => {
           <div className="mt-4">
             <h3 className="text-lg font-semibold">Recommendations</h3>
             <p className="text-gray-700">{item.recommendations}</p>
+          </div>
+
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold">Transport Suggestions</h3>
+            <p className="text-gray-700">{item.transport_suggestion}</p>
           </div>
         </div>
       ))}

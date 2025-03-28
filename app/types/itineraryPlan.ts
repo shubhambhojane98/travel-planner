@@ -3,6 +3,8 @@ export interface ItineraryItem {
   date: string;
   activities: string;
   recommendations: string;
+  transport_suggestion: string;
+  budget_estimate: string;
   image: string;
   _id: string; // Assuming ObjectId is stored as a string in frontend
   lat: number;
@@ -20,5 +22,6 @@ export interface ItineraryPlan {
     from: string; // ISO date string
     to: string;
   };
+  image: any;
   itinerary: ItineraryItem[];
 }
