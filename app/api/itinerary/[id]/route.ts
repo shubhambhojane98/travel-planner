@@ -7,9 +7,12 @@ type Params = {
   };
 };
 
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(
+  req: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     if (!id)
       return NextResponse.json(
         { error: "Itinerary ID is required" },
