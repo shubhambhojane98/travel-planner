@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
 import StoreProvider from "./components/StoreProvider";
+import { Analytics } from "@vercel/analytics/next";
 import "leaflet/dist/leaflet.css";
 
 const geistSans = Geist({
@@ -37,6 +38,7 @@ export default function RootLayout({
           >
             <Navbar />
             {children}
+            <Analytics />
           </body>
         </html>
       </StoreProvider>

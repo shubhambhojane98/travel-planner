@@ -45,8 +45,6 @@ export async function POST(req: Request) {
       to,
     } = await req.json();
 
-    console.log(from, to);
-
     if (!destination || !date?.from || !date?.to) {
       return NextResponse.json(
         {
@@ -116,14 +114,6 @@ export async function POST(req: Request) {
       console.error("Error parsing itinerary JSON:", error);
       return NextResponse.json({ error: "Failed to parse itinerary JSON" });
     }
-
-    // **Ensure activities & recommendations are stored as single strings**
-    // itineraryJson = itineraryJson.map((day: any) => ({
-    //   ...day,
-    //   activities: typeof day.activities === "string" ? day.activities : "",
-    //   recommendations:
-    //     typeof day.recommendations === "string" ? day.recommendations : "",
-    // }));
 
     console.log(
       "Itinerary being saved:",
