@@ -1,18 +1,11 @@
 import Itinerary from "@/models/Itinerary";
 import { NextRequest, NextResponse } from "next/server";
 
-type Params = {
-  params: {
-    id: string;
-  };
-};
+type tParams = Promise<{ id: string }>;
 
-export async function GET(
-  req: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function GET(req: NextRequest, { params }: { params: tParams }) {
   try {
-    const { id } = await context.params;
+    const { id } = await params;
     if (!id)
       return NextResponse.json(
         { error: "Itinerary ID is required" },
