@@ -46,14 +46,14 @@ const Itinerary = () => {
     //   <Map locations={trip.itinerary} />
     // </div>
 
-    <div className="flex flex-col md:flex-row gap-4 px-4 md:px-6 pt-4 md:pt-6">
+    <div className="flex flex-col md:flex-col  gap-4 px-4 md:px-6 pt-4 md:pt-6">
       {/* Itinerary Card - Full width on small screens, 50% on medium+ */}
-      <div className="w-full md:w-1/2">
+      <div className="w-full flex justify-center ">
         <ItineraryCard trip={trip} />
       </div>
 
       {/* Map Section - Prevents touching the top */}
-      <div className="w-full md:w-[48%] h-[400px] rounded-lg overflow-hidden shadow-lg md:self-start">
+      <div className="w-full  h-[400px] rounded-lg overflow-hidden shadow-lg md:self-start mb-5">
         <Map locations={trip.itinerary} />
       </div>
     </div>

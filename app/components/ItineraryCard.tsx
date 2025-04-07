@@ -7,7 +7,7 @@ const ItineraryCard = ({ trip }: any) => {
   }
   console.log(trip);
   return (
-    <div className="max-w-2xl m-10  p-6 bg-white shadow-lg rounded-lg">
+    <div className="max-w-4xl m-10  p-6 bg-white shadow-lg rounded-lg">
       <h1 className="text-2xl font-bold">{trip.destination}</h1>
       <p className="text-gray-500">
         {new Date(trip.date.from).toDateString()} -{" "}

@@ -82,7 +82,6 @@ export async function POST(req: Request) {
     }
     **Ensure:**
     - Activities should be detailed and engaging.
-    - Each activity should have accurate latitude and longitude coordinates.
     - Recommendations should be a single string (comma-separated).
     - "budget_estimate" is tailored to travel type ${budget} in USD (low/medium/high).
     - "transport_suggestion" includes metro, taxi, local transport  or walkability insights.
