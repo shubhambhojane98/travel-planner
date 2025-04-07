@@ -28,12 +28,20 @@ const TravelForm = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [destination, setDestination] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showError, setShowError] = useState(false);
   const dispatch = useDispatch();
   const router = useRouter();
   const debounceRef = useRef<NodeJS.Timeout | null>(null); // FIX: Proper Type
   const fetchIdRef = useRef(0); // Tracks latest API request
 
-  const { register, handleSubmit, control, watch, setValue } = useForm();
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm();
   const { user } = useUser();
   const userId = user?.id;
 
@@ -44,6 +52,13 @@ const TravelForm = () => {
   console.log("IT", itinerary);
 
   const onSubmit = async (data: any) => {
+    if (!data.date?.from || !data.date?.to) {
+      setShowError(true);
+      return;
+    }
+
+    setShowError(false);
+
     setLoading(true); // Start loading
 
     try {
@@ -198,10 +213,17 @@ const TravelForm = () => {
               className="mt-2 "
               type="text"
               placeholder="Paris"
-              {...register("destination", { required: true })}
+              {...register("destination", {
+                required: "Destination is required",
+              })}
               value={destination}
               onChange={handleDestinationChange}
             />
+            {errors.destination && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.destination.message as string}
+              </p>
+            )}
             {suggestions.length > 0 && (
               <ul className="absolute bg-white border w-full  shadow-md max-h-40 overflow-y-auto z-10">
                 {suggestions.map((suggestion, index) => (
@@ -263,6 +285,11 @@ const TravelForm = () => {
                   />
                 </PopoverContent>
               </Popover>
+              {showError && (
+                <p className="text-sm text-red-500 mt-1">
+                  Please select a date range
+                </p>
+              )}
             </div>
           </div>
 
