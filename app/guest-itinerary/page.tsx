@@ -1,8 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 import { ItineraryPlan } from "../types/itineraryPlan";
-import ItineraryCard from "../components/ItineraryCard";
-import Map from "../components/Map";
+// import ItineraryCard from "../components/ItineraryCard";
+// import Map from "../components/Map";
+import dynamic from "next/dynamic";
+
+const Map = dynamic(() => import("../components/Map"), { ssr: false });
+const ItineraryCard = dynamic(() => import("../components/ItineraryCard"), {
+  ssr: false,
+});
 
 const GuestItinerary: React.FC = () => {
   console.log("Component is rendering...");
