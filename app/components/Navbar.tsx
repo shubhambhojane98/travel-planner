@@ -19,7 +19,9 @@ const Navbar = () => {
     <nav className="bg-black text-white px-6 py-3 shadow-lg">
       <div className="flex justify-between items-center">
         {/* Logo */}
-        <h1 className="text-xl font-bold">AI Trip Planner</h1>
+        <Link className="text-xl font-bold" href="/">
+          AI Trip Planner
+        </Link>
 
         {/* Hamburger Menu (Visible on Mobile) */}
         <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
