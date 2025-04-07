@@ -1,10 +1,13 @@
 import Itinerary from "@/models/Itinerary";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+type Params = {
+  params: {
+    id: string;
+  };
+};
+
+export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { id } = await params;
     if (!id)
