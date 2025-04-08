@@ -46,7 +46,7 @@ const GuestItinerary: React.FC = () => {
       </div>
 
       {/* Map Section - Prevents touching the top */}
-      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg md:self-start">
+      <div className="w-full h-[400px] rounded-lg overflow-hidden shadow-lg md:self-start mb-5">
         <Map locations={itinerary.itinerary} />
       </div>
     </div>
