@@ -83,7 +83,7 @@ export async function POST(req: Request) {
     **Ensure:**
     - Activities should be detailed and engaging.
     - Recommendations should be a single string (comma-separated).
-    - "budget_estimate" is tailored to travel type ${budget} in USD (low/medium/high).
+    - "budget_estimate" is tailored to travel type ${budget} in USD (number only, no labels like 'low', 'medium', or 'high'). (low/medium/high).
     - "transport_suggestion" includes metro, taxi, local transport  or walkability insights.
     - "best_time" should provide the ideal months or seasons for visiting based on weather, crowd levels, and cultural events.
     "image_keywords" should contain one highly relevant keyword that best represents the day's itinerary, focusing on landmarks, destinations, or cultural attractions (e.g., "Eiffel Tower," "Interlaken Lake," "Taj Mahal").    `;
